@@ -3,7 +3,6 @@ module Day01Spec where
 import Control.Exception (evaluate)
 import Day01.Solution (solution)
 import Test.Hspec
-import Test.QuickCheck
 
 spec =
   describe "Day01" $ do
