@@ -19,41 +19,27 @@ module Day01.Part2 where
 stringToIntArr :: Read a => String -> [a]
 stringToIntArr = map $ read . (: [])
 
-group :: [a] -> [[a]]
-group [] = []
-{- because of the drop 1 we will always end up with a length one list at the end -}
-group [x] = []
-group x = (take 2 x) : (group . (drop 1)) x
+nextIndex :: [a] -> Int -> Int
+nextIndex xs i = (i + halfLen) `mod` len
+  where
+    len = length xs
+    halfLen = len `div` 2
 
-{- groupHalf :: [a] -> [[a]] -}
-{- groupHalf x = groupHalfRecur (lengthHalf x) x -}
-groupHalfRecur :: Int -> [a] -> [[a]]
-groupHalfRecur halfLen all@(x:xs) =
-  if length all == halfLen
-    then []
-    else (x : [all !! halfLen]) : groupHalfRecur halfLen xs
+withIndex :: (Enum b, Num b) => [a] -> [(b, a)]
+withIndex = zip [0 ..]
 
-lengthHalf :: [a] -> Int
-lengthHalf x = (length x) `div` 2
+buildProcessElem :: (Eq a, Num a) => [a] -> (a -> (Int, a) -> a)
+buildProcessElem xs =
+  \acc (i, x) ->
+    let counterPart = (xs !! (nextIndex xs i))
+    in if x == counterPart
+         then acc + x
+         else acc
 
-appendFirst :: [a] -> [a]
-appendFirst all@(x:xs) = x : xs ++ (take (lengthHalf all) all)
-
-doubleMatch :: Eq a => [a] -> Bool
-doubleMatch (x:y:_) = x == y
-
-maybeAdd :: (Eq a, Num a) => a -> [a] -> a
-maybeAdd acc pair@(x:_) =
-  if doubleMatch pair
-    then acc + x
-    else acc
-
-reduce :: (Eq a, Num a) => [[a]] -> a
-reduce = foldl maybeAdd 0
+reduce :: (Eq a, Num a) => [a] -> a
+reduce xs = foldl processElem 0 $ withIndex xs
+  where
+    processElem = buildProcessElem xs
 
 solution :: (Eq a, Num a, Read a) => String -> a
-solution x = reduce (groupFn (appendFirst numArr))
-  where
-    numArr = stringToIntArr x
-    halfLen = lengthHalf x
-    groupFn = groupHalfRecur halfLen
+solution = reduce . stringToIntArr
