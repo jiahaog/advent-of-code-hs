@@ -22,6 +22,7 @@ library
   exposed-modules:     Lib
                      , Day01.Part1
                      , Day01.Part2
+                     , Day01.Main
                      , Day02.Part1
                      , Day02.Part2
   build-depends:       base >= 4.7 && < 5
