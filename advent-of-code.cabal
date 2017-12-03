@@ -22,6 +22,8 @@ library
   exposed-modules:     Lib
                      , Day01.Part1
                      , Day01.Part2
+                     , Day02.Part1
+                     , Day02.Part2
   build-depends:       base >= 4.7 && < 5
   default-language:    Haskell2010
 
