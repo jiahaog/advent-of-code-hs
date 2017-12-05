@@ -41,26 +41,38 @@ module Day03.Part1 where
  - 8 1, -1
  - 9 2, -1
  -}
+import Prelude hiding (Left, Right)
+
 dirs :: Num a => [(a, a)]
 dirs = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
-directions :: Num a => [Point a]
-directions = map (\(x, y) -> Point x y) dirs
+data Direction
+  = Right
+  | Up
+  | Left
+  | Down
+  deriving (Show, Enum)
+
+nextDir :: Direction -> Direction
+nextDir Down = Right
+nextDir x = succ x
 
 data Point a =
   Point a
         a
   deriving (Show, Eq)
 
-result :: Integral a => Point a -> a -> Int -> (Point a, a, Int)
+result :: Integral a => Point a -> a -> Direction -> (Point a, a, Direction)
 result prev currentSize currentDir =
-  if (currentDir `mod` 4) == 0
-    then if not (inBoard currentSize sameDirNext)
-           then (sameDirNext, currentSize + 2, currentDir + 1)
-           else (sameDirNext, currentSize, currentDir)
-    else if (inBoard currentSize sameDirNext)
-           then (sameDirNext, currentSize, currentDir)
-           else (addDir (currentDir + 1) prev, currentSize, currentDir + 1)
+  case currentDir of
+    Right ->
+      if not (inBoard currentSize sameDirNext)
+        then (sameDirNext, currentSize + 2, nextDir currentDir)
+        else (sameDirNext, currentSize, currentDir)
+    _ ->
+      if (inBoard currentSize sameDirNext)
+        then (sameDirNext, currentSize, currentDir)
+        else (addDir (nextDir currentDir) prev, currentSize, nextDir currentDir)
   where
     sameDirNext = addDir currentDir prev
 
@@ -77,18 +89,21 @@ inBoard size (Point x y)
   where
     delta = (size - 1) `div` 2
 
-addDir :: Num a => Int -> Point a -> Point a
-addDir dir (Point x y) = Point (x + toAddX) (y + toAddY)
-  where
-    dirIndex = dir `mod` (length directions)
-    Point toAddX toAddY = (directions !! dirIndex)
+addDir :: Num a => Direction -> Point a -> Point a
+addDir dir (Point x y) =
+  case dir of
+    Right -> Point (x + 1) y
+    Up -> Point x (y + 1)
+    Left -> Point (x - 1) y
+    Down -> Point x (y - 1)
 
-foldFn :: Integral a => a -> [(Point a, a, Int)] -> [(Point a, a, Int)]
+foldFn ::
+     Integral a => a -> [(Point a, a, Direction)] -> [(Point a, a, Direction)]
 foldFn i acc@((prev, currentSize, currentDir):_) =
   (result prev currentSize currentDir) : acc
 
-spiralIndicesWorking :: Integral a => a -> [(Point a, a, Int)]
-spiralIndicesWorking i = foldr foldFn [(Point 0 0, 1, 0)] [1 .. i - 1]
+spiralIndicesWorking :: Integral a => a -> [(Point a, a, Direction)]
+spiralIndicesWorking i = foldr foldFn [(Point 0 0, 1, Right)] [1 .. i - 1]
 
 solution :: Integral a => a -> a
 solution i = abs x + abs y
