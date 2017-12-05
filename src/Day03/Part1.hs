@@ -43,9 +43,6 @@ module Day03.Part1 where
  -}
 import Prelude hiding (Left, Right)
 
-dirs :: Num a => [(a, a)]
-dirs = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-
 data Direction
   = Right
   | Up
@@ -62,27 +59,34 @@ data Point a =
         a
   deriving (Show, Eq)
 
-result :: Integral a => Point a -> a -> Direction -> (Point a, a, Direction)
-result prev currentSize currentDir =
-  case currentDir of
+type SpiralContext a = (Point a, a, Direction)
+
+nextSpiralPoint :: Integral a => SpiralContext a -> SpiralContext a
+nextSpiralPoint (point, size, dir) =
+  case dir of
     Right ->
-      if not (inBoard currentSize sameDirNext)
-        then (sameDirNext, currentSize + 2, nextDir currentDir)
-        else (sameDirNext, currentSize, currentDir)
+      if moveForwardStillInGrid
+        then continueForward (point, size, dir)
+        else changeDirection . continueForward . increaseGridSize $
+             (point, size, dir)
     _ ->
-      if (inBoard currentSize sameDirNext)
-        then (sameDirNext, currentSize, currentDir)
-        else (addDir (nextDir currentDir) prev, currentSize, nextDir currentDir)
+      if moveForwardStillInGrid
+        then continueForward (point, size, dir)
+        else continueForward . changeDirection $ (point, size, dir)
   where
-    sameDirNext = addDir currentDir prev
+    moveForwardStillInGrid = inGrid size . addDir dir $ point
+    -- Grid size always increases by 2 when going out of the current perimeter by 1 step
+    increaseGridSize (point, size, dir) = (point, size + 2, dir)
+    continueForward (point, size, dir) = ((addDir dir point), size, dir)
+    changeDirection (point, size, dir) = (point, size, nextDir dir)
 
 {- 1 - 0, 0 -}
 {- 3 - -1, 1 -}
 {- 5 - -2, 2 -}
 {- 7 - -3, 3 -}
 -- Size ranges from 1, 3, 5
-inBoard :: Integral a => a -> Point a -> Bool
-inBoard size (Point x y)
+inGrid :: Integral a => a -> Point a -> Bool
+inGrid size (Point x y)
   | x > delta || x < -delta = False
   | y > delta || y < -delta = False
   | otherwise = True
@@ -97,20 +101,18 @@ addDir dir (Point x y) =
     Left -> Point (x - 1) y
     Down -> Point x (y - 1)
 
-foldFn ::
-     Integral a => a -> [(Point a, a, Direction)] -> [(Point a, a, Direction)]
-foldFn i acc@((prev, currentSize, currentDir):_) =
-  (result prev currentSize currentDir) : acc
+foldFn :: Integral a => a -> [SpiralContext a] -> [SpiralContext a]
+foldFn i acc@(prev:_) = nextSpiralPoint prev : acc
 
-spiralIndicesWorking :: Integral a => a -> [(Point a, a, Direction)]
-spiralIndicesWorking i = foldr foldFn [(Point 0 0, 1, Right)] [1 .. i - 1]
+spiralIndices :: Integral a => a -> [SpiralContext a]
+spiralIndices i = foldr foldFn [(Point 0 0, 1, Right)] [1 .. i - 1]
 
 solution :: Integral a => a -> a
 solution i = abs x + abs y
   where
     extract (point, _, _) = point
-    Point x y = extract . head . spiralIndicesWorking $ i
-{- spiralIndices :: Integral a => a -> [(a, (a, a))] -}
-{- spiralIndices i = -}
+    Point x y = extract . head . spiralIndices $ i
+{- spiralDebug :: Integral a => a -> [(a, (a, a))] -}
+{- spiralDebug i = -}
 {-   map (\(index, (point, _, _)) -> (index, point)) $ -}
-{-   zip [0 ..] $ spiralIndicesWorking i -}
+{-   zip [0 ..] $ spiralIndices i -}

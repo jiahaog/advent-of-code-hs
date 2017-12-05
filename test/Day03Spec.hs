@@ -9,10 +9,10 @@ import Test.Hspec
 
 spec =
   describe "Specs" $ do
-    describe "inBoard" $ do
-      it "when in board" $ do Part1.inBoard 3 (Point 1 1) `shouldBe` True
-      it "when in board" $ do Part1.inBoard 5 (Point 2 2) `shouldBe` True
-      it "when not in board" $ do Part1.inBoard 5 (Point 2 3) `shouldBe` False
+    describe "inGrid" $ do
+      it "when in board" $ do Part1.inGrid 3 (Point 1 1) `shouldBe` True
+      it "when in board" $ do Part1.inGrid 5 (Point 2 2) `shouldBe` True
+      it "when not in board" $ do Part1.inGrid 5 (Point 2 3) `shouldBe` False
     describe "addDir" $ do
       it "add right" $ do
         Part1.addDir Right (Point 5 5) `shouldBe` (Point 6 5 :: Point Int)
