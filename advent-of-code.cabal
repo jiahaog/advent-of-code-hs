@@ -25,6 +25,8 @@ library
                      , Day01.Main
                      , Day02.Part1
                      , Day02.Part2
+                     , Day03.Main
+                     , Day03.Part1
   build-depends:       base >= 4.7 && < 5
   default-language:    Haskell2010
 
