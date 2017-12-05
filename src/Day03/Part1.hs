@@ -1,6 +1,4 @@
 module Day03.Part1 where
- -- Search -- Descend by smallest
- --
 
 {-
  - You come across an experimental new kind of memory stored on an infinite two-dimensional grid.
@@ -43,10 +41,18 @@ module Day03.Part1 where
  - 8 1, -1
  - 9 2, -1
  -}
-directions :: Num a => [(a, a)]
-directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+dirs :: Num a => [(a, a)]
+dirs = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
-result :: Integral a => (a, a) -> a -> Int -> ((a, a), a, Int)
+directions :: Num a => [Point a]
+directions = map (\(x, y) -> Point x y) dirs
+
+data Point a =
+  Point a
+        a
+  deriving (Show, Eq)
+
+result :: Integral a => Point a -> a -> Int -> (Point a, a, Int)
 result prev currentSize currentDir =
   if (currentDir `mod` 4) == 0
     then if not (inBoard currentSize sameDirNext)
@@ -63,34 +69,33 @@ result prev currentSize currentDir =
 {- 5 - -2, 2 -}
 {- 7 - -3, 3 -}
 -- Size ranges from 1, 3, 5
-inBoard :: Integral a => a -> (a, a) -> Bool
-inBoard size (x, y)
+inBoard :: Integral a => a -> Point a -> Bool
+inBoard size (Point x y)
   | x > delta || x < -delta = False
   | y > delta || y < -delta = False
   | otherwise = True
   where
     delta = (size - 1) `div` 2
 
-addDir :: Num a => Int -> (a, a) -> (a, a)
-addDir dir (x, y) = (x + toAddX, y + toAddY)
+addDir :: Num a => Int -> Point a -> Point a
+addDir dir (Point x y) = Point (x + toAddX) (y + toAddY)
   where
     dirIndex = dir `mod` (length directions)
-    (toAddX, toAddY) = (directions !! dirIndex)
+    Point toAddX toAddY = (directions !! dirIndex)
 
-foldFn :: Integral a => a -> [((a, a), a, Int)] -> [((a, a), a, Int)]
+foldFn :: Integral a => a -> [(Point a, a, Int)] -> [(Point a, a, Int)]
 foldFn i acc@((prev, currentSize, currentDir):_) =
   (result prev currentSize currentDir) : acc
 
-spiralIndicesWorking :: Integral a => a -> [((a, a), a, Int)]
-spiralIndicesWorking i = foldr foldFn [((0, 0), 1, 0)] [1 .. i - 1]
-
-spiralIndices :: Integral a => a -> [(a, (a, a))]
-spiralIndices i =
-  map (\(index, (point, _, _)) -> (index, point)) $
-  zip [0 ..] $ spiralIndicesWorking i
+spiralIndicesWorking :: Integral a => a -> [(Point a, a, Int)]
+spiralIndicesWorking i = foldr foldFn [(Point 0 0, 1, 0)] [1 .. i - 1]
 
 solution :: Integral a => a -> a
 solution i = abs x + abs y
   where
     extract (point, _, _) = point
-    (x, y) = extract . head . spiralIndicesWorking $ i
+    Point x y = extract . head . spiralIndicesWorking $ i
+{- spiralIndices :: Integral a => a -> [(a, (a, a))] -}
+{- spiralIndices i = -}
+{-   map (\(index, (point, _, _)) -> (index, point)) $ -}
+{-   zip [0 ..] $ spiralIndicesWorking i -}
