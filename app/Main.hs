@@ -3,11 +3,12 @@ module Main where
 import Data.List (lookup)
 import qualified Day01.Main as Day01
 import qualified Day03.Main as Day03
+import qualified Day04.Main as Day04
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 
 dispatch :: [(String, String -> String -> IO ())]
-dispatch = [("1", Day01.main), ("3", Day03.main)]
+dispatch = [("1", Day01.main), ("3", Day03.main), ("4", Day04.main)]
 
 main = do
   args <- getArgs
